@@ -9,12 +9,10 @@ Let's create a basic Core Data model and populate it with two related entities. 
     | state         |              |  population    |
     | population    |              |                |
     |               |              |                |
-    |               |              |                |
     | neighborhoods | <--------->> |  city          |
     +---------------+              +----------------+
 
-
-To get started, we'll import the modules for CoreData.
+To get started, we'll import the module for CoreData.
 
 ```swift
 import CoreData
@@ -46,24 +44,7 @@ We'll use an optional error variable for capturing any errors returned from Core
 var error: NSError? = nil
 ```
 
-Declare a class for handling notifications, and wire up an instance to the notification center. *This is an optional step*. In a real app, this object would likely correspond to a fetched results controller or another object on your data model. A managed object context will send out notifications as the objects it controls execute state changes.
-
-```swift
-class NotificationListener: NSObject {
-    func handleDidChangeNotification(notification:NSNotification) {
-        println("did change notification received")
-    }
-    func handleDidSaveNotification(notification:NSNotification) {
-        println("did save notification received")
-    }
-}
-
-var delegate = NotificationListener()
-NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidChangeNotification:", name: NSManagedObjectContextObjectsDidChangeNotification, object: nil)
-NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidSaveNotification:", name: NSManagedObjectContextDidSaveNotification, object: nil)
-```
-
-Ok enough setup, lets time to define the managed object model. This is typically done inside Xcode with the [Core Data Model Editor](https://developer.apple.com/library/ios/recipes/xcode_help-core_data_modeling_tool/Articles/about_cd_modeling_tool.html). Entities and Relationships are laid out graphically and a `.momd` file is generated at compile time. But the model can also be declared in code and we'll do that here.
+Next, define the [Managed Object Model](https://developer.apple.com/library/mac/documentation/DataManagement/Devpedia-CoreData/managedObjectModel.html). Typically this is done inside Xcode with the [Core Data Model Editor](https://developer.apple.com/library/mac/recipes/xcode_help-core_data_modeling_tool/Articles/about_cd_modeling_tool.html). Entities and Relationships are laid out graphically and a `.momd` file is generated at compile time. But we're inside a playground and don't have access to the model editor. No problem, the model can still be [declared in code](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html#//apple_ref/doc/uid/TP40001650-207332-TPXREF151). This requires some boilerplate, but it's also a good learning exercise.
 
 ```swift
 var model = NSManagedObjectModel()
@@ -79,7 +60,7 @@ var neighborhoodEntity = NSEntityDescription()
 neighborhoodEntity.name = GROEntity.Neighborhood
 ```
 
-Entities can have attributes. In our model, a `City` attributes for `name`, `state`, and `population` whereas a `Neighborhood` only has attributes for `name` and `population`. Attributes are given a type when defined. The `name` and `state` attribute are `.StringAttributeType` and the `population` is given a `Integer64AttributeType`. All the attributes are marked are required, with `optional` set to `false`.
+[Entities](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdMOM.html#//apple_ref/doc/uid/TP40002328-SW5) have properties, in the form of attributes and relationships. In our model, a `City` has attributes for `name`, `state`, and `population` whereas a `Neighborhood` only has attributes for `name` and `population`. Attributes have a type. The `name` and `state` attribute are `.StringAttributeType` and the `population` is given a `Integer64AttributeType`. All the attributes are marked as required by setting `optional` to `false`. An attribute could also be marked as indexed...
 
 ```swift
 var nameAttribute = NSAttributeDescription()
@@ -122,7 +103,7 @@ cityRelationship.deleteRule = NSDeleteRule.NullifyDeleteRule
 cityRelationship.inverseRelationship = neighborhoodRelationship
 ```
 
-The types of a `name` and `population` attribute are the same between `City` and `Neighborhood`, so they can be originate from the same source. But the attributes must be unique so a copy is made.
+The type and characteristics of the `name` and `population` attributes are identicial between `City` and `Neighborhood`-- the are both required strings. Given this, we can share the `NSAttributeDescription` between `City` and `Neighborhood` and create a copy so the attributes are unique.
 
 ```swift
 cityEntity.properties = [nameAttribute, stateAttribute, populationAttribute, neighborhoodRelationship]
@@ -151,7 +132,7 @@ var managedObjectContext = NSManagedObjectContext(concurrencyType: NSManagedObje
 managedObjectContext.persistentStoreCoordinator = persistentStoreCoordinator
 ```
 
-The stack is now setup. Let's create a new `City` entity and insert it into the context. This is done by calling `insertNewObjectForEntityForName` on `NSEntityDescription` and including the name of our `City` entity and the context that should create (and own) the entity. This will return an `NSManagedObject` instance for our entity. We can the set attribute values on the entity using key paths. A typical app, with a more complex data model, may [create subclasses of `NSManagedObject`](http://stackoverflow.com/questions/7947458/why-exactly-would-one-subclass-nsmanagedobject) for specific entities and set attributes using instance variables instead of keyPaths.
+The stack is now setup and ready for use. Create a new `City` entity and insert it into the context. This is done by calling `insertNewObjectForEntityForName` on `NSEntityDescription` and including the name of the entity and the context that should create it. This will return an `NSManagedObject` instance for our entity. We can the set attribute values on the entity using key paths. A typical app, with a more complex data model, may [create subclasses of `NSManagedObject`](http://stackoverflow.com/questions/7947458/why-exactly-would-one-subclass-nsmanagedobject) for specific entities and set attributes using instance variables instead of keyPaths.
 
 ```swift
 var city: AnyObject! = NSEntityDescription.insertNewObjectForEntityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
@@ -161,7 +142,7 @@ city.setValue("Washington", forKeyPath: GROAttribute.State)
 city.setValue(634535, forKeyPath: GROAttribute.Population)
 ```
 
-That's it. If we saved the context at this point, we'd have one `City` entity. A city is comprised of neighborhoods, so add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. In a [real app](http://www.objc.io/issue-10/networked-core-data-application.html), this data might be retrieved as JSON from a web service.
+A city is comprised of neighborhoods, so add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. In a [real app](http://www.objc.io/issue-10/networked-core-data-application.html), this data might be retrieved as JSON from a web service.
 
 ```swift
 var neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population:10147],
@@ -180,6 +161,23 @@ for obj in neighborhoods {
 }
 ```
 
+Until this point, the context has remained 'empty'. When the context is saved it will send out notificatons about the object state changes. As an optional state, we can create an `NotificationListener` and subscribe to the context notifications. In a real app, this object would likely correspond to a fetched results controller or another object on your data model. On iOS, a [Fetched Results Controller](https://developer.apple.com/library/ios/documentation/CoreData/Reference/NSFetchedResultsController_Class/Reference/Reference.html) provides a nice abstraction for responding to change notifications. Below, we'll use [`printf()` debugging](http://stackoverflow.com/a/189570) to peak behind the scenes and examine the notifications sent by Core Data.
+
+```swift
+class NotificationListener: NSObject {
+    func handleDidChangeNotification(notification:NSNotification) {
+        println("did change notification received: \(notification)")
+    }
+    func handleDidSaveNotification(notification:NSNotification) {
+        println("did save notification received: \(notification)")
+    }
+}
+
+let delegate = NotificationListener()
+NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidChangeNotification:", name: NSManagedObjectContextObjectsDidChangeNotification, object: nil)
+NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidSaveNotification:", name: NSManagedObjectContextDidSaveNotification, object: nil)
+```
+
 Save the context so it's populated with the entities.
 
 ```swift
@@ -189,9 +187,7 @@ if error {
 }
 ```
 
-Until this point, the context has remained 'empty'. When the context is saved, the `NotificationListener` will receive notifications about changes. On iOS, a [Fetched Results Controller](https://developer.apple.com/library/ios/documentation/CoreData/Reference/NSFetchedResultsController_Class/Reference/Reference.html) provides a nice abstraction for responding to change notifications.
-
-With the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html).
+After the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html). We'll use a predicate to only return `Neighborhood` entities with a `population` greater than 15000. In our data model, two such entities exist.
 
 ```swift
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
