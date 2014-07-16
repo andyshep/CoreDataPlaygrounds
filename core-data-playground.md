@@ -46,7 +46,7 @@ We'll use an optional error variable for capturing any errors returned from Core
 var error: NSError? = nil
 ```
 
-Declare a class for handling notifications, and wire up an instance to the notification center. This is an optional step. If this were an full app, this object would likely corespond to a fetched results controller or another object on your data model. A managed object context will send out notifications as the objects it controls execute state changes.
+Declare a class for handling notifications, and wire up an instance to the notification center. *This is an optional step*. In a real app, this object would likely correspond to a fetched results controller or another object on your data model. A managed object context will send out notifications as the objects it controls execute state changes.
 
 ```swift
 class NotificationListener: NSObject {
@@ -161,7 +161,7 @@ city.setValue("Washington", forKeyPath: GROAttribute.State)
 city.setValue(634535, forKeyPath: GROAttribute.Population)
 ```
 
-That's it. If we saved the context at this point, we'd have one `City` entity. A city is comprised of neighborhoods, so add those too. Create a dictionary containing key/value pairs cooresponding to entity attributes. In a [real app](http://www.objc.io/issue-10/networked-core-data-application.html), this data might be retrived as JSON from a web service.
+That's it. If we saved the context at this point, we'd have one `City` entity. A city is comprised of neighborhoods, so add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. In a [real app](http://www.objc.io/issue-10/networked-core-data-application.html), this data might be retrieved as JSON from a web service.
 
 ```swift
 var neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population:10147],
@@ -191,7 +191,7 @@ if error {
 
 Until this point, the context has remained 'empty'. When the context is saved, the `NotificationListener` will receive notifications about changes. On iOS, a [Fetched Results Controller](https://developer.apple.com/library/ios/documentation/CoreData/Reference/NSFetchedResultsController_Class/Reference/Reference.html) provides a nice abstraction for responding to change notifications.
 
-With the context saved, we can query it by creatings a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html).
+With the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html).
 
 ```swift
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
