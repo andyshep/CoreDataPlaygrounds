@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Section 1</title>
+  <meta id="xcode-display" name="xcode-display" content="render">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+<body>
+<div class="content-wrapper">
+  <section class="section">
+    <h2 id="a-swift-introduction-to-core-data">A Swift Introduction to Core Data</h2>
+<p>Let&#39;s create a basic Core Data model and populate it with two related entities. The two entities in our data model will be <code>City</code> and <code>Neighborhood</code>. There is a one-to-many relationship between cities and neighborhoods. A <code>City</code> has many <code>Neighborhoods</code> and each <code>Neighborhood</code> belongs to one <code>City</code>. Here&#39;s a diagram representing the model.</p>
+<pre><code>+---------------+              +----------------+
+| City          |              |  Neighborhood  |
+|---------------|              |----------------|
+| name          |              |  name          |
+| state         |              |  population    |
+| population    |              |                |
+|               |              |                |
+| neighborhoods | &lt;---------&gt;&gt; |  city          |
++---------------+              +----------------+
+</code></pre><p>To get started, we&#39;ll import the module for CoreData.</p>
+
+  </section>
+</div>
+</body>
+</html>
