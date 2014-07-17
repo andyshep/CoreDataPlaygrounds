@@ -103,7 +103,7 @@ cityRelationship.deleteRule = NSDeleteRule.NullifyDeleteRule
 cityRelationship.inverseRelationship = neighborhoodRelationship
 ```
 
-The type and characteristics of the `name` and `population` attributes are identicial between `City` and `Neighborhood`-- the are both required strings. Given this, we can share the `NSAttributeDescription` between `City` and `Neighborhood` and create a copy so the attributes are unique.
+The type and characteristics of the `name` and `population` attributes are identical between `City` and `Neighborhood`-- the are both required strings. Given this, we can share the `NSAttributeDescription` between `City` and `Neighborhood` and create a copy so the attributes are unique.
 
 ```swift
 cityEntity.properties = [nameAttribute, stateAttribute, populationAttribute, neighborhoodRelationship]
@@ -142,7 +142,7 @@ city.setValue("Washington", forKeyPath: GROAttribute.State)
 city.setValue(634535, forKeyPath: GROAttribute.Population)
 ```
 
-A city is comprised of neighborhoods, so add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. In a [real app](http://www.objc.io/issue-10/networked-core-data-application.html), this data might be retrieved as JSON from a web service.
+A city is comprised of neighborhoods, so let's add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. In a [real app](http://www.objc.io/issue-10/networked-core-data-application.html), this data might be retrieved as JSON from a web service.
 
 ```swift
 var neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population:10147],
@@ -161,20 +161,16 @@ for obj in neighborhoods {
 }
 ```
 
-Until this point, the context has remained 'empty'. When the context is saved it will send out notificatons about the object state changes. As an optional state, we can create an `NotificationListener` and subscribe to the context notifications. In a real app, this object would likely correspond to a fetched results controller or another object on your data model. On iOS, a [Fetched Results Controller](https://developer.apple.com/library/ios/documentation/CoreData/Reference/NSFetchedResultsController_Class/Reference/Reference.html) provides a nice abstraction for responding to change notifications. Below, we'll use [`printf()` debugging](http://stackoverflow.com/a/189570) to peak behind the scenes and examine the notifications sent by Core Data.
+Until this point, the context has remained "empty", per se. When the context is saved it will send out notifications about the object state changes. As an optional step, we can create a `NotificationListener` and subscribe to the context notifications. In a real app, this object would likely correspond to a [Fetched Results Controller](https://developer.apple.com/library/ios/documentation/CoreData/Reference/NSFetchedResultsController_Class/Reference/Reference.html) or another object on your data model. In a Playground setup, we'll use [`printf()` debugging](http://stackoverflow.com/a/189570) to peak behind the scenes and examine the notifications sent by Core Data.`
 
 ```swift
 class NotificationListener: NSObject {
-    func handleDidChangeNotification(notification:NSNotification) {
-        println("did change notification received: \(notification)")
-    }
     func handleDidSaveNotification(notification:NSNotification) {
         println("did save notification received: \(notification)")
     }
 }
 
 let delegate = NotificationListener()
-NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidChangeNotification:", name: NSManagedObjectContextObjectsDidChangeNotification, object: nil)
 NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidSaveNotification:", name: NSManagedObjectContextDidSaveNotification, object: nil)
 ```
 
@@ -187,7 +183,7 @@ if error {
 }
 ```
 
-After the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html). We'll use a predicate to only return `Neighborhood` entities with a `population` greater than 15000. In our data model, two such entities exist.
+After the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html). We'll use a [predicate](https://developer.apple.com/library/mac/documentation/cocoa/reference/Foundation/Classes/NSPredicate_Class/Reference/NSPredicate.html) to return `Neighborhood` entities with a `population` greater than 15000. Only two such entities exist in our data model.
 
 ```swift
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
@@ -203,3 +199,47 @@ results.count
 results[0].description
 results[1].description
 ```
+
+Every managed object is assigned managed object id from the context. An [`NSManagedObjectID`](https://developer.apple.com/library/mac/documentation/cocoa/reference/CoreDataFramework/Classes/NSManagedObjectID_Class/Reference/NSManagedObjectID.html) is a unique id that can be used to reference managed objects across contexts. Consider the example below where `secondObject` is returned from another context by objectId.
+
+```swift
+var moid = (results[0] as NSManagedObject).objectID
+var firstObject = managedObjectContext.existingObjectWithID(moid, error: &error)
+
+var secondContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
+secondContext.persistentStoreCoordinator = persistentStoreCoordinator
+
+var secondObject = secondContext.existingObjectWithID(moid, error: &error)
+
+firstObject.description
+secondObject.description
+```
+
+Attributes and relationships on a managed object may be changed. When the context is saved the changes made to the managed objects are persisted. Consider the example below where the `population` attribute of a `Neighborhood` is changed and the context to saved.
+
+```swift
+fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
+fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
+
+results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error)
+var managedObject = results[0] as? NSManagedObject
+managedObject.description
+
+managedObject!.setValue(1000, forKey: GROAttribute.Population)
+
+managedObjectContext.save(&error)
+managedObject = managedObjectContext.existingObjectWithID(managedObject!.objectID, error: &error)
+
+managedObject.description
+```
+
+Objects can be deleted through the context. Once deleted, they can no longer be retrieved by object id.
+
+```swift
+managedObjectContext.deleteObject(managedObject)
+managedObjectContext.save(&error)
+
+managedObject = managedObjectContext.existingObjectWithID(managedObject!.objectID, error: &error)
+```
+
+That wraps up a basic introduction to Core Data using a Swift and a Playground. The Core Data framework is big and there's [much more explore](http://www.objc.io/issue-4/). For more information, consider reading through the [Core Data Programming Guide](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html) or looking at the source for a Core Data [template project in Xcode](http://code.tutsplus.com/tutorials/core-data-from-scratch-core-data-stack--cms-20926).
