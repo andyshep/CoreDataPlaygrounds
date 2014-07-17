@@ -1,19 +1,24 @@
 # A Swift Introduction to Core Data
 
-A no frills, bare-metal introduction to Core Data using a Swift playground.
+A no frills, bare-metal introduction to Core Data using a Swift playground. Built using the [Swift Playground Builder](https://github.com/jas/swift-playground-builder).
 
 ## Requirements
 * [Xcode 6 beta 3](https://developer.apple.com/xcode/downloads/) or greater
 * [npm](https://github.com/npm/npm)
 * [Swift Playground Builder](https://github.com/jas/swift-playground-builder)
 
+*npm and Swift Playground Builder are required only to compile from markdown source*
+
 ## Installation
 
-To install, clone the repo locally and generate the playground from the markdown source.
+Clone the repo and open the playground directly in Xcode. Follow the steps below to generate playground from markdown source.
 
 	$ git clone https://github.com/andyshep/CoreDataPlayground.git && cd CoreDataPlayground
 	$ playground core-data-playground.md
 	$ open core-data-playground.playground
+
+![core-data-playground1.png](http://i.imgur.com/67CccNj.png)
+![core-data-playground2.png](http://i.imgur.com/66yHDvG.png)
 	
 ## License
 
