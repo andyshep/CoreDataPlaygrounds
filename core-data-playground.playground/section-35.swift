@@ -1,13 +1,10 @@
-fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
-fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
+var moid = (results[0] as NSManagedObject).objectID
+var firstObject = managedObjectContext.existingObjectWithID(moid, error: &error)
 
-results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error)
-var managedObject = results[0] as? NSManagedObject
-managedObject.description
+var secondContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
+secondContext.persistentStoreCoordinator = persistentStoreCoordinator
 
-managedObject!.setValue(1000, forKey: GROAttribute.Population)
+var secondObject = secondContext.existingObjectWithID(moid, error: &error)
 
-managedObjectContext.save(&error)
-managedObject = managedObjectContext.existingObjectWithID(managedObject!.objectID, error: &error)
-
-managedObject.description
+firstObject.description
+secondObject.description

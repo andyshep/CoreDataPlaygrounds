@@ -1,10 +1,12 @@
-var moid = (results[0] as NSManagedObject).objectID
-var firstObject = managedObjectContext.existingObjectWithID(moid, error: &error)
+var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
+fetchRequest.predicate = NSPredicate(format: "population > %d", 15000)
 
-var secondContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
-secondContext.persistentStoreCoordinator = persistentStoreCoordinator
+var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error)
+if error {
+    println("error executing fetch request: \(error)")
+}
 
-var secondObject = secondContext.existingObjectWithID(moid, error: &error)
+results.count
 
-firstObject.description
-secondObject.description
+results[0].description
+results[1].description

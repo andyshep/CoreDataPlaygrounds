@@ -142,6 +142,16 @@ city.setValue("Washington", forKeyPath: GROAttribute.State)
 city.setValue(634535, forKeyPath: GROAttribute.Population)
 ```
 
+In addition to the `insertNewObjectForEntityForName` convienence method, an entity can also be created by initializing an `NSManagedObject` with an `NSEntityDescription`.
+
+```swift
+var entity = NSEntityDescription.entityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
+var city2 = NSManagedObject(entity: entity, insertIntoManagedObjectContext: managedObjectContext)
+city2.setValue("San Francisco", forKeyPath: GROAttribute.Name)
+city2.setValue("California", forKeyPath: GROAttribute.State)
+city2.setValue(825863, forKeyPath: GROAttribute.Population)
+```
+
 A city has neighborhoods, so let's add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. A [real app](http://www.objc.io/issue-10/networked-core-data-application.html) might retreive this data as JSON from a web service.
 
 ```swift

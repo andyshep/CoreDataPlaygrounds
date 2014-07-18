@@ -11,7 +11,7 @@
 <body>
 <div class="content-wrapper">
   <section class="section">
-    <p>Attributes and relationships on a managed object may be changed. When the context is saved the changes made to the managed objects are persisted. In the example below the <code>population</code> attribute of a <code>Neighborhood</code> entity is changed and the context to saved.</p>
+    <p>Every managed object is assigned managed object id from the context. An <a href="https://developer.apple.com/library/mac/documentation/cocoa/reference/CoreDataFramework/Classes/NSManagedObjectID_Class/Reference/NSManagedObjectID.html"><code>NSManagedObjectID</code></a> is a unique id that can be used to reference managed objects across contexts. Consider the example below where <code>secondObject</code> is returned from another context by referencing a managed object id.</p>
 
   </section>
 </div>
