@@ -14,7 +14,7 @@ A no frills, bare-metal introduction to Core Data using a Swift playground. Buil
 Clone the repo and open the playground directly in Xcode. Follow the steps below to generate playground from markdown source.
 
 	$ git clone https://github.com/andyshep/CoreDataPlayground.git && cd CoreDataPlayground
-	$ playground core-data-playground.md
+	$ playground --platform ios core-data-playground.md
 	$ open core-data-playground.playground
 
 ![core-data-playground1.png](http://i.imgur.com/67CccNj.png)
