@@ -121,7 +121,7 @@ Create a [Persistent Store Coordinator](https://developer.apple.com/library/ios/
 ```swift
 var persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel:model)
 persistentStoreCoordinator.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil, error: &error)
-if error {
+if (error != nil) {
     println("error creating psc: \(error)")
 }
 ```
@@ -146,7 +146,7 @@ In addition to the `insertNewObjectForEntityForName` convienence method, an enti
 
 ```swift
 var entity = NSEntityDescription.entityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
-var city2 = NSManagedObject(entity: entity, insertIntoManagedObjectContext: managedObjectContext)
+var city2 = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
 city2.setValue("San Francisco", forKeyPath: GROAttribute.Name)
 city2.setValue("California", forKeyPath: GROAttribute.State)
 city2.setValue(825863, forKeyPath: GROAttribute.Population)
@@ -188,7 +188,7 @@ Save the context so it's populated with the entities.
 
 ```swift
 managedObjectContext.save(&error)
-if error {
+if (error != nil) {
     println("error saving context: \(error)")
 }
 ```
@@ -199,8 +199,8 @@ After the context saved, we can query it by creating a [Fetch Request](https://d
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "population > %d", 15000)
 
-var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error)
-if error {
+var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as [NSManagedObject]
+if (error != nil) {
     println("error executing fetch request: \(error)")
 }
 
@@ -221,8 +221,8 @@ secondContext.persistentStoreCoordinator = persistentStoreCoordinator
 
 var secondObject = secondContext.existingObjectWithID(moid, error: &error)
 
-firstObject.description
-secondObject.description
+firstObject!.description
+secondObject!.description
 ```
 
 Attributes and relationships on a managed object may be changed. When the context is saved the changes made to the managed objects are persisted. In the example below the `population` attribute of a `Neighborhood` entity is changed and the context to saved.
@@ -231,14 +231,14 @@ Attributes and relationships on a managed object may be changed. When the contex
 fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
 
-results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error)
-var managedObject = results[0] as? NSManagedObject
+results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as [NSManagedObject]
+var managedObject = results[0]
 managedObject.description
 
-managedObject!.setValue(1000, forKey: GROAttribute.Population)
+managedObject.setValue(1000, forKey: GROAttribute.Population)
 
 managedObjectContext.save(&error)
-managedObject = managedObjectContext.existingObjectWithID(managedObject!.objectID, error: &error)
+managedObject = managedObjectContext.existingObjectWithID(managedObject.objectID, error: &error)!
 
 managedObject.description
 ```
@@ -249,7 +249,12 @@ Objects can be deleted through the context. Once deleted, they can no longer be 
 managedObjectContext.deleteObject(managedObject)
 managedObjectContext.save(&error)
 
-managedObject = managedObjectContext.existingObjectWithID(managedObject!.objectID, error: &error)
+// should fail, object with id not found
+if let managedObject = managedObjectContext.existingObjectWithID(managedObject.objectID, error: &error) {
+    
+} else {
+    error!.description
+}
 ```
 
 That wraps up a basic introduction to Core Data using a Swift and a Playground. The Core Data framework is big and there's [much more explore](http://www.objc.io/issue-4/). For more information, consider reading through the [Core Data Programming Guide](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html) or looking at the source for a Core Data [template project in Xcode](http://code.tutsplus.com/tutorials/core-data-from-scratch-core-data-stack--cms-20926).
