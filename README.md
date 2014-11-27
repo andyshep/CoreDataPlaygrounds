@@ -3,7 +3,7 @@
 A no frills, bare-metal introduction to Core Data using a Swift playground. Built using the [Swift Playground Builder](https://github.com/jas/swift-playground-builder).
 
 ## Requirements
-* [Xcode 6 beta 3](https://developer.apple.com/xcode/downloads/) or greater
+* [Xcode 6.1.1](https://developer.apple.com/xcode/downloads/) or greater
 * [npm](https://github.com/npm/npm)
 * [Swift Playground Builder](https://github.com/jas/swift-playground-builder)
 

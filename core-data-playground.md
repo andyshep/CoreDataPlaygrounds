@@ -164,8 +164,8 @@ var neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population
 
 for obj in neighborhoods {
     var neighborhood: AnyObject! = NSEntityDescription.insertNewObjectForEntityForName(GROEntity.Neighborhood, inManagedObjectContext: managedObjectContext)
-    neighborhood.setValue(obj.valueForKey(GROAttribute.Name), forKey: GROAttribute.Name)
-    neighborhood.setValue(obj.valueForKey(GROAttribute.Population), forKey: GROAttribute.Population)
+    neighborhood.setValue(obj[GROAttribute.Name], forKey: GROAttribute.Name)
+    neighborhood.setValue(obj[GROAttribute.Population], forKey: GROAttribute.Population)
     
     neighborhood.setValue(city, forKey: GRORelationship.City)
 }

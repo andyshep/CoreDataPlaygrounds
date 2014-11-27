@@ -1,1 +1,0 @@
-var error: NSError? = nil
