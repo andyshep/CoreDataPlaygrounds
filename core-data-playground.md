@@ -199,7 +199,7 @@ After the context saved, we can query it by creating a [Fetch Request](https://d
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "population > %d", 15000)
 
-var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as [NSManagedObject]
+var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]
 if (error != nil) {
     println("error executing fetch request: \(error)")
 }
@@ -231,7 +231,7 @@ Attributes and relationships on a managed object may be changed. When the contex
 fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
 
-results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as [NSManagedObject]
+results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]
 var managedObject = results[0]
 managedObject.description
 

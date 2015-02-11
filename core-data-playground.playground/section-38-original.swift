@@ -1,7 +1,7 @@
 fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
 
-results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as [NSManagedObject]
+results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]
 var managedObject = results[0]
 managedObject.description
 

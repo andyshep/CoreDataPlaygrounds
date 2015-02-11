@@ -3,7 +3,7 @@
 A no frills, bare-metal introduction to Core Data using a Swift playground. Built using the [Swift Playground Builder](https://github.com/jas/swift-playground-builder).
 
 ## Requirements
-* [Xcode 6.1.1](https://developer.apple.com/xcode/downloads/) or greater
+* [Xcode 6.3](https://developer.apple.com/xcode/downloads/) or greater
 * [npm](https://github.com/npm/npm)
 * [Swift Playground Builder](https://github.com/jas/swift-playground-builder)
 
@@ -11,7 +11,7 @@ A no frills, bare-metal introduction to Core Data using a Swift playground. Buil
 
 ## Installation
 
-Clone the repo and open the playground directly in Xcode. Follow the steps below to generate playground from markdown source.
+Clone the repo and open the playground directly in Xcode. To generate to playground directly from source, follow the steps below.
 
 	$ git clone https://github.com/andyshep/CoreDataPlayground.git && cd CoreDataPlayground
 	$ playground --platform ios core-data-playground.md
@@ -24,7 +24,7 @@ Clone the repo and open the playground directly in Xcode. Follow the steps below
 
 The MIT License (MIT)
 
-Copyright (c) 2014 Andrew Shepard
+Copyright (c) 2014-2015 Andrew Shepard
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

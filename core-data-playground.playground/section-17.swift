@@ -1,1 +1,0 @@
-model.entities = [cityEntity, neighborhoodEntity]
