@@ -1,2 +1,0 @@
-var managedObjectContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.MainQueueConcurrencyType)
-managedObjectContext.persistentStoreCoordinator = persistentStoreCoordinator
