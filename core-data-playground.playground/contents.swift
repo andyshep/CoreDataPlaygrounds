@@ -1,4 +1,4 @@
-//: ## A Swift Introduction to Core Data
+//: ## A Swift 2.0 Introduction to Core Data
 //:
 //: Let's create a basic Core Data model and populate it with two related entities. The two entities in our data model will be City and Neighborhood. There is a one-to-many relationship between cities and neighborhoods. A City has many Neighborhoods and each Neighborhood belongs to one City. Here's a diagram representing the model.
 //:
@@ -34,10 +34,6 @@ struct GRORelationship {
     static let City = "city"
 }
 
-//: We'll use an optional error variable for capturing any errors returned from Core Data.
-
-var error: NSError? = nil
-
 //: Next define the [Managed Object Model](https://developer.apple.com/library/mac/documentation/DataManagement/Devpedia-CoreData/managedObjectModel.html). Typically this is done inside Xcode with the [Core Data Model Editor](https://developer.apple.com/library/mac/recipes/xcode_help-core_data_modeling_tool/Articles/about_cd_modeling_tool.html). Entities and Relationships are laid out graphically and a `.momd` file is generated at compile time. But we're inside a playground and don't have access to the model editor. No problem, the model can still be [declared in code](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html#//apple_ref/doc/uid/TP40001650-207332-TPXREF151). This requires some boilerplate, but it's also a good learning exercise.
 
 var model = NSManagedObjectModel()
@@ -57,6 +53,7 @@ nameAttribute.name = GROAttribute.Name
 nameAttribute.attributeType = NSAttributeType.StringAttributeType
 nameAttribute.optional = false
 nameAttribute.indexed = false
+
 
 var stateAttribute = NSAttributeDescription()
 stateAttribute.name = GROAttribute.State
@@ -92,8 +89,7 @@ cityRelationship.inverseRelationship = neighborhoodRelationship
 //: The type and characteristics of the `name` and `population` attributes are identical between `City` and `Neighborhood`-- the are both required strings. Given this, we can share the `NSAttributeDescription` between `City` and `Neighborhood` and create a copy so the attributes are unique.
 
 cityEntity.properties = [nameAttribute, stateAttribute, populationAttribute, neighborhoodRelationship]
-neighborhoodEntity.properties = [nameAttribute.copy(), populationAttribute.copy(), cityRelationship]
-
+neighborhoodEntity.properties = [nameAttribute.copy() as! NSPropertyDescription, populationAttribute.copy() as! NSPropertyDescription, cityRelationship as NSPropertyDescription]
 //: Setup the model with the entities we've created. At this point the model for our use case is fully defined. We can now fit the model into the rest of the stack.
 
 model.entities = [cityEntity, neighborhoodEntity]
@@ -101,9 +97,10 @@ model.entities = [cityEntity, neighborhoodEntity]
 //: Create a [Persistent Store Coordinator](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/persistentStoreCoordinator.html) (PSC) to communicate with the model we've declared. The coordinator is typically attached to an on disk SQL store with a URL. Because we're in a playground an [in memory store](https://developer.apple.com/library/mac/Documentation/Cocoa/Conceptual/CoreData/Articles/cdUsingPersistentStores.html) is used instead. When creating the PSC, you may include various options in the configuration dictionary, including specifying things like [migration policies](https://developer.apple.com/library/mac/documentation/cocoa/conceptual/CoreDataVersioning/Articles/vmInitiating.html); we can ignore these options in our simplistic stack.
 
 var persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel:model)
-persistentStoreCoordinator.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil, error: &error)
-if (error != nil) {
-    println("error creating psc: \(error)")
+do {
+    try persistentStoreCoordinator.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil)
+}catch{
+    print("error creating psc: \(error)")
 }
 
 //: Create a [Managed Object Context](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/managedObjectContext.html) and attach the PSC to it. We'll use `.MainQueueConcurrencyType` in a single threaded environment.
@@ -148,7 +145,7 @@ for obj in neighborhoods {
 
 class NotificationListener: NSObject {
     func handleDidSaveNotification(notification:NSNotification) {
-        println("did save notification received: \(notification)")
+        print("did save notification received: \(notification)")
     }
 }
 
@@ -156,10 +153,10 @@ let delegate = NotificationListener()
 NSNotificationCenter.defaultCenter().addObserver(delegate, selector: "handleDidSaveNotification:", name: NSManagedObjectContextDidSaveNotification, object: nil)
 
 //: Save the context so it's populated with the entities.
-
-managedObjectContext.save(&error)
-if (error != nil) {
-    println("error saving context: \(error)")
+do {
+    try managedObjectContext.save()
+}catch {
+    print("error saving context: \(error)")
 }
 
 //: After the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html). We'll use a [predicate](https://developer.apple.com/library/mac/documentation/cocoa/reference/Foundation/Classes/NSPredicate_Class/Reference/NSPredicate.html) to return `Neighborhood` entities with a `population` greater than 15000. Only two such entities exist in the data model.
@@ -167,55 +164,60 @@ if (error != nil) {
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "population > %d", 15000)
 
-var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]
-if (error != nil) {
-    println("error executing fetch request: \(error)")
+var results:[NSManagedObject] = []
+
+do {
+    results = try managedObjectContext.executeFetchRequest(fetchRequest) as! [NSManagedObject]
+} catch {
+    print("error executing fetch request: \(error)")
 }
 
 results.count
-
-results[0].description
-results[1].description
+results[0].valueForKey(GROAttribute.Name)
+results[1].valueForKey(GROAttribute.Name)
 
 //: Every managed object is assigned managed object id from the context. An [`NSManagedObjectID`](https://developer.apple.com/library/mac/documentation/cocoa/reference/CoreDataFramework/Classes/NSManagedObjectID_Class/Reference/NSManagedObjectID.html) is a unique id that can be used to reference managed objects across contexts. Consider the example below where `secondObject` is returned from another context by referencing a managed object id.
-
-var moid = (results[0] as NSManagedObject).objectID
-var firstObject = managedObjectContext.existingObjectWithID(moid, error: &error)
-
-var secondContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
-secondContext.persistentStoreCoordinator = persistentStoreCoordinator
-
-var secondObject = secondContext.existingObjectWithID(moid, error: &error)
-
-firstObject!.description
-secondObject!.description
-
-//: Attributes and relationships on a managed object may be changed. When the context is saved the changes made to the managed objects are persisted. In the example below the `population` attribute of a `Neighborhood` entity is changed and the context to saved.
-
-fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
-fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
-
-results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]
-var managedObject = results[0]
-managedObject.description
-
-managedObject.setValue(1000, forKey: GROAttribute.Population)
-
-managedObjectContext.save(&error)
-managedObject = managedObjectContext.existingObjectWithID(managedObject.objectID, error: &error)!
-
-managedObject.description
-
-//: Objects can be deleted through the context. Once deleted, they can no longer be retrieved by object id.
-
-managedObjectContext.deleteObject(managedObject)
-managedObjectContext.save(&error)
-
-// should fail, object with id not found
-if let managedObject = managedObjectContext.existingObjectWithID(managedObject.objectID, error: &error) {
+do{
+    var moid = results[0].objectID
+    var firstObject = try managedObjectContext.existingObjectWithID(moid)
     
-} else {
-    error!.description
+    var secondContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
+    secondContext.persistentStoreCoordinator = persistentStoreCoordinator
+    
+    var secondObject = try secondContext.existingObjectWithID(moid)
+    
+    firstObject.valueForKey(GROAttribute.Name)
+    secondObject.valueForKey(GROAttribute.Name)
+    
+//: Attributes and relationships on a managed object may be changed. When the context is saved the changes made to the managed objects are persisted. In the example below the `population` attribute of a `Neighborhood` entity is changed and the context to saved.
+    
+    fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
+    fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
+    
+    results = try managedObjectContext.executeFetchRequest(fetchRequest) as! [NSManagedObject]
+    var managedObject = results[0]
+    managedObject.valueForKey(GROAttribute.Name)
+    
+    managedObject.setValue(1000, forKey: GROAttribute.Population)
+    
+    try managedObjectContext.save()
+    managedObject = try managedObjectContext.existingObjectWithID(managedObject.objectID)
+    
+    managedObject.valueForKey(GROAttribute.Name)
+    
+//: Objects can be deleted through the context. Once deleted, they can no longer be retrieved by object id.
+    
+    managedObjectContext.deleteObject(managedObject)
+    try managedObjectContext.save()
+    
+//: should fail, object with id not found
+    do {
+        managedObject = try managedObjectContext.existingObjectWithID(managedObject.objectID)
+    } catch {
+        print("error executing fetch request: \(error)")
+    }
+    
+}catch {
+    print(error)
 }
-
 //: That wraps up a basic introduction to Core Data using a Swift and a Playground. The Core Data framework is big and there's [much more explore](http://www.objc.io/issue-4/). For more information, consider reading through the [Core Data Programming Guide](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html) or looking at the source for a Core Data [template project in Xcode](http://code.tutsplus.com/tutorials/core-data-from-scratch-core-data-stack--cms-20926).
