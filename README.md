@@ -1,9 +1,9 @@
 # A Swift Introduction to Core Data
 
-A no frills, bare-metal introduction to Core Data. Uses the new [rich stylized text](https://developer.apple.com/swift/blog/?id=24) playground features.
+A no frills, bare-metal introduction to Core Data.
 
 ## Requirements
-* [Xcode 6.3 beta 2](https://developer.apple.com/xcode/downloads/) or greater
+* [Xcode 7 beta 5](https://developer.apple.com/xcode/downloads/) or greater
 
 ## Installation
 
