@@ -3,7 +3,7 @@
 A no frills, bare-metal introduction to Core Data.
 
 ## Requirements
-* [Xcode 7 beta 5](https://developer.apple.com/xcode/downloads/) or greater
+* [Xcode 7.2.1](https://developer.apple.com/xcode/downloads/) or greater
 
 ## Installation
 
@@ -19,7 +19,7 @@ Clone the repo and open the playground directly in Xcode.
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2015 Andrew Shepard
+Copyright (c) 2014-2016 Andrew Shepard
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
