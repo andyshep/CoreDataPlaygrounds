@@ -36,31 +36,31 @@ struct GRORelationship {
 
 //: Next define the [Managed Object Model](https://developer.apple.com/library/mac/documentation/DataManagement/Devpedia-CoreData/managedObjectModel.html). Typically this is done inside Xcode with the [Core Data Model Editor](https://developer.apple.com/library/mac/recipes/xcode_help-core_data_modeling_tool/Articles/about_cd_modeling_tool.html). Entities and Relationships are laid out graphically and a `.momd` file is generated at compile time. But we're inside a playground and don't have access to the model editor. No problem, the model can still be [declared in code](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html#//apple_ref/doc/uid/TP40001650-207332-TPXREF151). This requires some boilerplate, but it's also a good learning exercise.
 
-var model = NSManagedObjectModel()
+let model = NSManagedObjectModel()
 
 //: Next create entity descriptions for the entities in the model. Our model will have two entities: `City` and `Neighborhood`
 
-var cityEntity = NSEntityDescription()
+let cityEntity = NSEntityDescription()
 cityEntity.name = GROEntity.City
 
-var neighborhoodEntity = NSEntityDescription()
+let neighborhoodEntity = NSEntityDescription()
 neighborhoodEntity.name = GROEntity.Neighborhood
 
 //: [Entities](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdMOM.html#//apple_ref/doc/uid/TP40002328-SW5) have properties, in the form of attributes and relationships. In our model, a `City` has attributes for `name`, `state`, and `population` whereas a `Neighborhood` only has attributes for `name` and `population`. Attributes have a type. The `name` and `state` attribute are `.StringAttributeType` and the `population` is given a `Integer64AttributeType`. All the attributes are marked as required by setting `optional` to `false`. An attribute could also be marked as indexed...
 
-var nameAttribute = NSAttributeDescription()
+let nameAttribute = NSAttributeDescription()
 nameAttribute.name = GROAttribute.Name
 nameAttribute.attributeType = NSAttributeType.StringAttributeType
 nameAttribute.optional = false
 nameAttribute.indexed = false
 
-var stateAttribute = NSAttributeDescription()
+let stateAttribute = NSAttributeDescription()
 stateAttribute.name = GROAttribute.State
 stateAttribute.attributeType = NSAttributeType.StringAttributeType
 stateAttribute.optional = false
 stateAttribute.indexed = false
 
-var populationAttribute = NSAttributeDescription()
+let populationAttribute = NSAttributeDescription()
 populationAttribute.name = GROAttribute.Population
 populationAttribute.attributeType = NSAttributeType.Integer64AttributeType
 populationAttribute.optional = false
@@ -68,8 +68,8 @@ populationAttribute.indexed = false
 
 //: Next declare the one-to-many relationship between `City` and `Neighborhoods`. The relationship needs to be declared on both ends, or between both entities. On one end of the relationship, the `neighborhoodEntity` is setup with a `maxCount` of zero. On the other end, the `cityEntity` is given a `maxCount` of one. This defines both ends of the relationship. To connect the relationship fully, set the `inverseRelationship` property on each relationship to point to the other.
 
-var cityRelationship = NSRelationshipDescription()
-var neighborhoodRelationship = NSRelationshipDescription()
+let cityRelationship = NSRelationshipDescription()
+let neighborhoodRelationship = NSRelationshipDescription()
 
 neighborhoodRelationship.name = GRORelationship.Neighborhoods
 neighborhoodRelationship.destinationEntity = neighborhoodEntity
@@ -88,14 +88,14 @@ cityRelationship.inverseRelationship = neighborhoodRelationship
 //: The type and characteristics of the `name` and `population` attributes are identical between `City` and `Neighborhood`-- the are both required strings. Given this, we can share the `NSAttributeDescription` between `City` and `Neighborhood` and create a copy so the attributes are unique.
 
 cityEntity.properties = [nameAttribute, stateAttribute, populationAttribute, neighborhoodRelationship]
-neighborhoodEntity.properties = [nameAttribute.copy() as! NSPropertyDescription, populationAttribute.copy() as! NSPropertyDescription, cityRelationship as NSPropertyDescription]
+neighborhoodEntity.properties = [nameAttribute, populationAttribute, cityRelationship].map { return ($0.copy() as! NSPropertyDescription) }
 //: Setup the model with the entities we've created. At this point the model for our use case is fully defined. We can now fit the model into the rest of the stack.
 
 model.entities = [cityEntity, neighborhoodEntity]
 
 //: Create a [Persistent Store Coordinator](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/persistentStoreCoordinator.html) (PSC) to communicate with the model we've declared. The coordinator is typically attached to an on disk SQL store with a URL. Because we're in a playground an [in memory store](https://developer.apple.com/library/mac/Documentation/Cocoa/Conceptual/CoreData/Articles/cdUsingPersistentStores.html) is used instead. When creating the PSC, you may include various options in the configuration dictionary, including specifying things like [migration policies](https://developer.apple.com/library/mac/documentation/cocoa/conceptual/CoreDataVersioning/Articles/vmInitiating.html); we can ignore these options in our simplistic stack.
 
-var persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel:model)
+let persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel:model)
 
 do {
     try persistentStoreCoordinator.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil)
@@ -106,12 +106,12 @@ catch {
 
 //: Create a [Managed Object Context](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/managedObjectContext.html) and attach the PSC to it. We'll use `.MainQueueConcurrencyType` in a single threaded environment.
 
-var managedObjectContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.MainQueueConcurrencyType)
+let managedObjectContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.MainQueueConcurrencyType)
 managedObjectContext.persistentStoreCoordinator = persistentStoreCoordinator
 
 //: The stack is now setup and ready to use. Create a new `City` entity and insert it into the context. This is done by calling `insertNewObjectForEntityForName` on `NSEntityDescription` and including the name of the entity and the context that should create it. This will return an `NSManagedObject` instance for our entity. We can then set attribute values on the entity using key paths. A typical app, with a more complex data model, may [create subclasses of `NSManagedObject`](http://stackoverflow.com/questions/7947458/why-exactly-would-one-subclass-nsmanagedobject) for specific entities and set attributes using instance variables instead of key paths.
 
-var city = NSEntityDescription.insertNewObjectForEntityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
+let city = NSEntityDescription.insertNewObjectForEntityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
 
 city.setValue("Seattle", forKeyPath: GROAttribute.Name)
 city.setValue("Washington", forKeyPath: GROAttribute.State)
@@ -119,15 +119,15 @@ city.setValue(634535, forKeyPath: GROAttribute.Population)
 
 //: In addition to the `insertNewObjectForEntityForName` convienence method, an entity can also be created by initializing an `NSManagedObject` with an `NSEntityDescription`.
 
-var entity = NSEntityDescription.entityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
-var city2 = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
+let entity = NSEntityDescription.entityForName(GROEntity.City, inManagedObjectContext: managedObjectContext)
+let city2 = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
 city2.setValue("San Francisco", forKeyPath: GROAttribute.Name)
 city2.setValue("California", forKeyPath: GROAttribute.State)
 city2.setValue(825863, forKeyPath: GROAttribute.Population)
 
 //: A city has neighborhoods, so let's add those too. Create a dictionary containing key/value pairs corresponding to entity attributes. A [real app](http://www.objc.io/issue-10/networked-core-data-application.html) might retreive this data as JSON from a web service.
 
-var neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population:10147],
+let neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population:10147],
     [GROAttribute.Name:"Phinney Ridge", GROAttribute.Population:11732],
     [GROAttribute.Name:"Greenwood", GROAttribute.Population:17111],
     [GROAttribute.Name:"Wallingford", GROAttribute.Population:17451],
@@ -166,7 +166,7 @@ catch {
 var fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
 fetchRequest.predicate = NSPredicate(format: "population > %d", 15000)
 
-var results:[NSManagedObject] = []
+var results: [NSManagedObject] = []
 
 do {
     results = try managedObjectContext.executeFetchRequest(fetchRequest) as! [NSManagedObject]
@@ -175,7 +175,9 @@ catch {
     print("error executing fetch request: \(error)")
 }
 
-results.count
+
+assert(results.count >= 2, "wrong number of results")
+
 results[0].valueForKey(GROAttribute.Name)
 results[1].valueForKey(GROAttribute.Name)
 
@@ -184,7 +186,7 @@ results[1].valueForKey(GROAttribute.Name)
 var firstObject: NSManagedObject?
 var secondObject: NSManagedObject?
 
-let moid = results[0].objectID
+guard let moid = results.first?.objectID else { fatalError("no object id was found") }
 let secondContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.PrivateQueueConcurrencyType)
 secondContext.persistentStoreCoordinator = persistentStoreCoordinator
 
