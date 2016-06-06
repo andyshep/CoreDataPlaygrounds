@@ -1,6 +1,6 @@
 # Core Data Playgrounds
 
-A set of playgrounds for exploring the Core Data framework in bitsize increments.
+A set of playgrounds for exploring the Core Data framework in bite-sized increments.
 
 | Playground Name | Description |
 |---|---|
