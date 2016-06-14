@@ -7,7 +7,7 @@ public class DataSource: NSObject {
     
     public weak var tableView: UITableView? {
         didSet {
-            tableView!.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+            tableView!.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
             tableView!.dataSource = self
             
             do {
@@ -26,9 +26,9 @@ public class DataSource: NSObject {
         super.init()
     }
     
-    public lazy var fetchedResultsController: NSFetchedResultsController = {
-        let fetchRequest = NSFetchRequest(entityName: "Event")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: true)]
+    public lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Event")
+        fetchRequest.sortDescriptors = [SortDescriptor(key: "timestamp", ascending: true)]
         
         let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.context, sectionNameKeyPath: nil, cacheName: nil)
         frc.delegate = self
@@ -38,15 +38,15 @@ public class DataSource: NSObject {
 }
 
 extension DataSource: UITableViewDataSource {
-    public func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.fetchedResultsController.fetchedObjects?.count ?? 0
     }
     
-    @objc public func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+    @objc public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        guard let event = self.fetchedResultsController.fetchedObjects?[indexPath.row] as? NSManagedObject else { fatalError() }
-        guard let timestamp = event.valueForKey("timestamp") as? NSDate else { fatalError() }
+        let event = self.fetchedResultsController.fetchedObjects?[(indexPath as NSIndexPath).row]
+        guard let timestamp = event?.value(forKey: "timestamp") as? Date else { fatalError() }
         cell.textLabel?.text = timestamp.description
         
         return cell
@@ -54,25 +54,25 @@ extension DataSource: UITableViewDataSource {
 }
 
 extension DataSource: NSFetchedResultsControllerDelegate {
-    public func controllerWillChangeContent(controller: NSFetchedResultsController) {
+    public func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.tableView?.beginUpdates()
     }
     
-    public func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: AnyObject, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
-        case .Insert:
-            tableView?.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
-        case .Delete:
-            tableView?.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-        case .Update:
+        case .insert:
+            tableView?.insertRows(at: [newIndexPath!], with: .fade)
+        case .delete:
+            tableView?.deleteRows(at: [indexPath!], with: .fade)
+        case .update:
             break
-        case .Move:
-            tableView?.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-            tableView?.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
+        case .move:
+            tableView?.deleteRows(at: [indexPath!], with: .fade)
+            tableView?.insertRows(at: [newIndexPath!], with: .fade)
         }
     }
     
-    public func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.tableView?.endUpdates()
     }
 }

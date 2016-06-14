@@ -2,38 +2,38 @@
 
 import Cocoa
 import CoreData
-import XCPlayground
+import PlaygroundSupport
 
-enum CoreDataError: ErrorType {
-    case ModelNotFound
-    case ModelNotCreated
+enum CoreDataError: ErrorProtocol {
+    case modelNotFound
+    case modelNotCreated
 }
 
 func createManagedObjectContext() throws -> NSManagedObjectContext {
-    guard let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd") else {
-        throw CoreDataError.ModelNotFound
+    guard let modelURL = Bundle.main().urlForResource("Model", withExtension: "momd") else {
+        throw CoreDataError.modelNotFound
     }
     
-    guard let model = NSManagedObjectModel(contentsOfURL: modelURL) else {
-        throw CoreDataError.ModelNotCreated
+    guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
+        throw CoreDataError.modelNotCreated
     }
     
     let psc = NSPersistentStoreCoordinator(managedObjectModel: model)
     
-    try psc.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil)
+    try psc.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil, options: nil)
     
-    let context = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+    let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
     context.persistentStoreCoordinator = psc
     
     return context
 }
 
-func insertObjectsIntoContext(context: NSManagedObjectContext) throws {
+func insertObjectsIntoContext(_ context: NSManagedObjectContext) throws {
     
     let names = ["apricot", "nectarine", "grapefruit", "papaya", "peach", "orange"]
     
     for name in names {
-        let entity = NSEntityDescription.insertNewObjectForEntityForName("Fruit", inManagedObjectContext: context)
+        let entity = NSEntityDescription.insertNewObject(forEntityName: "Fruit", into: context)
         
         entity.setValue(name, forKey: "name")
     }
@@ -54,7 +54,7 @@ class DataSource: NSObject {
         arrayController.managedObjectContext = self.context
         arrayController.entityName = "Fruit"
         arrayController.automaticallyPreparesContent = false
-        arrayController.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        arrayController.sortDescriptors = [SortDescriptor(key: "name", ascending: true)]
         
         return arrayController
     }()
@@ -72,7 +72,7 @@ try insertObjectsIntoContext(context)
 
 let dataSource = DataSource(context: context)
 
-column.bind(NSValueBinding, toObject: dataSource.arrayController, withKeyPath: "arrangedObjects.name", options: nil)
-try dataSource.arrayController.fetchWithRequest(nil, merge: false)
+column.bind(NSValueBinding, to: dataSource.arrayController, withKeyPath: "arrangedObjects.name", options: nil)
+try dataSource.arrayController.fetch(with: nil, merge: false)
 
-XCPlaygroundPage.currentPage.liveView = tableView
+PlaygroundPage.current.liveView = tableView

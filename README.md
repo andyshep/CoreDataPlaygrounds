@@ -11,7 +11,8 @@ A set of playgrounds for exploring the Core Data framework in bite-sized increme
 
 ## Requirements
 
-* [Xcode 7.3](https://developer.apple.com/xcode/downloads/) or greater
+* [Xcode 8](https://developer.apple.com/xcode/downloads/) or greater
+* Swift 3
 	
 ## License
 

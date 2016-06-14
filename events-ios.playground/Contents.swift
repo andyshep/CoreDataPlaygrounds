@@ -2,7 +2,7 @@
 
 import UIKit
 import CoreData
-import XCPlayground
+import PlaygroundSupport
 
 let frame = CGRect(x: 0, y: 0, width: 320, height: 480)
 
@@ -27,7 +27,7 @@ class ViewController: UIViewController {
         self.dataSource.tableView = self.tableView
         self.view.addSubview(self.tableView)
         
-        let item = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Add, target: self, action: #selector(handleAddButton))
+        let item = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.add, target: self, action: #selector(handleAddButton))
         self.navigationItem.rightBarButtonItem = item
     }
     
@@ -36,10 +36,10 @@ class ViewController: UIViewController {
         return tableView
     }()
     
-    func handleAddButton(sender: AnyObject) {
+    func handleAddButton(_ sender: AnyObject) {
         let context = self.dataSource.context
-        let entity = NSEntityDescription.insertNewObjectForEntityForName("Event", inManagedObjectContext: context)
-        entity.setValue(NSDate(), forKey: "timestamp")
+        let entity = NSEntityDescription.insertNewObject(forEntityName: "Event", into: context)
+        entity.setValue(Date(), forKey: "timestamp")
         
         try! context.save()
     }
@@ -53,4 +53,4 @@ let navController = UINavigationController(rootViewController: viewController)
 
 navController.view.frame = frame
 
-XCPlaygroundPage.currentPage.liveView = navController.view
+PlaygroundPage.current.liveView = navController.view

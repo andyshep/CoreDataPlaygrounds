@@ -17,13 +17,13 @@
 
 import UIKit
 import CoreData
-import XCPlayground
+import PlaygroundSupport
 
 //: Next define an `ErrorType` to use later on, when handling Core Data errors.
 
-enum CoreDataError: ErrorType {
-    case ModelNotFound
-    case ModelNotCreated
+enum CoreDataError: ErrorProtocol {
+    case modelNotFound
+    case modelNotCreated
 }
 
 //: To build the Core Data stack we'll use a `createManagedObjectContext()` function that returns an `NSManagedObjectContext` or throws a `CoreDataError` if something went wrong. Creating the managed object context is fairly straightforward.
@@ -36,18 +36,18 @@ enum CoreDataError: ErrorType {
 */
 
 func createManagedObjectContext() throws -> NSManagedObjectContext {
-    guard let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd") else {
-        throw CoreDataError.ModelNotFound
+    guard let modelURL = Bundle.main().urlForResource("Model", withExtension: "momd") else {
+        throw CoreDataError.modelNotFound
     }
     
-    guard let model = NSManagedObjectModel(contentsOfURL: modelURL) else {
-        throw CoreDataError.ModelNotCreated
+    guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
+        throw CoreDataError.modelNotCreated
     }
     
     let psc = NSPersistentStoreCoordinator(managedObjectModel: model)
-    try psc.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil)
+    try psc.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil, options: nil)
     
-    let context = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+    let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
     context.persistentStoreCoordinator = psc
     
     return context
@@ -55,11 +55,11 @@ func createManagedObjectContext() throws -> NSManagedObjectContext {
 
 //: One important point is that the model is loaded from a `momd` file, which is part of the Playground resources. In a full blown Xcode project, a `momd` file is typically compiled from a `xcdatamodel`. But this doesn't happen inside a playground. Instead, the commmand line tool `momc` was used to compile the `xcdatamodel` and place the results `momd` inside this playground.
 
-func insertObjectsIntoContext(context: NSManagedObjectContext) throws {
+func insertObjectsIntoContext(_ context: NSManagedObjectContext) throws {
     let names = ["apricot", "nectarine", "grapefruit", "papaya", "peach", "orange"]
     
     for name in names {
-        let entity = NSEntityDescription.insertNewObjectForEntityForName("Fruit", inManagedObjectContext: context)
+        let entity = NSEntityDescription.insertNewObject(forEntityName: "Fruit", into: context)
         entity.setValue(name, forKey: "name")
     }
     
@@ -73,7 +73,7 @@ class DataSource: NSObject {
     
     weak var tableView: UITableView? {
         didSet {
-            tableView!.registerClass(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+            tableView!.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
             tableView!.dataSource = self
             
             do {
@@ -92,9 +92,9 @@ class DataSource: NSObject {
         super.init()
     }
     
-    lazy var fetchedResultsController: NSFetchedResultsController = {
-        let fetchRequest = NSFetchRequest(entityName: "Fruit")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+    lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Fruit")
+        fetchRequest.sortDescriptors = [SortDescriptor(key: "name", ascending: true)]
         
         let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.context, sectionNameKeyPath: nil, cacheName: nil)
         frc.delegate = self
@@ -106,15 +106,15 @@ class DataSource: NSObject {
 //: Using an extension, conform to the `UITableViewDataSource` protocol
 
 extension DataSource: UITableViewDataSource {
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.fetchedResultsController.fetchedObjects?.count ?? 0
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        guard let fruit = self.fetchedResultsController.fetchedObjects?[indexPath.row] as? NSManagedObject else { fatalError() }
-        guard let name = fruit.valueForKey("name") as? String else { fatalError() }
+        let fruit = self.fetchedResultsController.fetchedObjects?[(indexPath as NSIndexPath).row]
+        guard let name = fruit?.value(forKey: "name") as? String else { fatalError() }
         cell.textLabel?.text = name
         
         return cell
@@ -124,25 +124,25 @@ extension DataSource: UITableViewDataSource {
 //: Similarly, conform to the `NSFetchedResultsControllerDelegate` through an extension.
 
 extension DataSource: NSFetchedResultsControllerDelegate {
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.tableView?.beginUpdates()
     }
     
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: AnyObject, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
-        case .Insert:
-            tableView?.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
-        case .Delete:
-            tableView?.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-        case .Update:
+        case .insert:
+            tableView?.insertRows(at: [newIndexPath!], with: .fade)
+        case .delete:
+            tableView?.deleteRows(at: [indexPath!], with: .fade)
+        case .update:
             break
-        case .Move:
-            tableView?.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-            tableView?.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
+        case .move:
+            tableView?.deleteRows(at: [indexPath!], with: .fade)
+            tableView?.insertRows(at: [newIndexPath!], with: .fade)
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.tableView?.endUpdates()
     }
 }
@@ -162,7 +162,7 @@ class ViewController: UIViewController {
 }
 
 let tableView = UITableView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
-XCPlaygroundPage.currentPage.liveView = tableView
+PlaygroundPage.current.liveView = tableView
 
 do {
     let context = try createManagedObjectContext()

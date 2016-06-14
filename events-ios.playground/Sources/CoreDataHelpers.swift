@@ -1,23 +1,23 @@
 import CoreData
 
-public enum CoreDataError: ErrorType {
-    case ModelNotFound
-    case ModelNotCreated
+public enum CoreDataError: ErrorProtocol {
+    case modelNotFound
+    case modelNotCreated
 }
 
 public func createManagedObjectContext() throws -> NSManagedObjectContext {
-    guard let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd") else {
-        throw CoreDataError.ModelNotFound
+    guard let modelURL = Bundle.main().urlForResource("Model", withExtension: "momd") else {
+        throw CoreDataError.modelNotFound
     }
     
-    guard let model = NSManagedObjectModel(contentsOfURL: modelURL) else {
-        throw CoreDataError.ModelNotCreated
+    guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
+        throw CoreDataError.modelNotCreated
     }
     
     let psc = NSPersistentStoreCoordinator(managedObjectModel: model)
-    try psc.addPersistentStoreWithType(NSInMemoryStoreType, configuration: nil, URL: nil, options: nil)
+    try psc.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil, options: nil)
     
-    let context = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+    let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
     context.persistentStoreCoordinator = psc
     
     return context
