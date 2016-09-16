@@ -19,28 +19,29 @@ import UIKit
 import CoreData
 import PlaygroundSupport
 
-//: Next define an `ErrorType` to use later on, when handling Core Data errors.
+//: Next define an `Error` to use later on, when handling Core Data errors.
 
-enum CoreDataError: ErrorProtocol {
+enum CoreDataError: Error {
     case modelNotFound
     case modelNotCreated
 }
 
 //: To build the Core Data stack we'll use a `createManagedObjectContext()` function that returns an `NSManagedObjectContext` or throws a `CoreDataError` if something went wrong. Creating the managed object context is fairly straightforward.
 /*:
- 1. Find the URL for the `Model.momd` resource in the playground or throw a .ModelNotFound error
- 2. Load the model using the URL or throw a .ModelNotCreated error
+ 1. Find the URL for the `Model.momd` resource in the playground or throw a .modelNotFound error
+ 2. Load the model using the URL or throw a .modelNotCreated error
  3. Create a Persistent Store Coordinator using the model
  4. Try adding a Persistent Store to the Coordinator
  5. Create a Managed Object Context and assign the coordinator.
 */
 
 func createManagedObjectContext() throws -> NSManagedObjectContext {
-    guard let modelURL = Bundle.main().urlForResource("Model", withExtension: "momd") else {
+    
+    guard let url = Bundle.main.url(forResource: "Model", withExtension: "momd") else {
         throw CoreDataError.modelNotFound
     }
     
-    guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
+    guard let model = NSManagedObjectModel(contentsOf: url) else {
         throw CoreDataError.modelNotCreated
     }
     
@@ -94,7 +95,7 @@ class DataSource: NSObject {
     
     lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Fruit")
-        fetchRequest.sortDescriptors = [SortDescriptor(key: "name", ascending: true)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         
         let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.context, sectionNameKeyPath: nil, cacheName: nil)
         frc.delegate = self
@@ -128,7 +129,7 @@ extension DataSource: NSFetchedResultsControllerDelegate {
         self.tableView?.beginUpdates()
     }
     
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: AnyObject, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
         case .insert:
             tableView?.insertRows(at: [newIndexPath!], with: .fade)
@@ -147,19 +148,7 @@ extension DataSource: NSFetchedResultsControllerDelegate {
     }
 }
 
-//: A simple view controller is used to display a table view.
-
-class ViewController: UIViewController {
-    var tableView: UITableView {
-        let tableView = UITableView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
-        return tableView
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.view.addSubview(tableView)
-    }
-}
+//: Create table view
 
 let tableView = UITableView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
 PlaygroundPage.current.liveView = tableView

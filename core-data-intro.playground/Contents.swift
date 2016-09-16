@@ -46,7 +46,7 @@ cityEntity.name = GROEntity.City
 let neighborhoodEntity = NSEntityDescription()
 neighborhoodEntity.name = GROEntity.Neighborhood
 
-//: [Entities](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdMOM.html#//apple_ref/doc/uid/TP40002328-SW5) have properties, in the form of attributes and relationships. In our model, a `City` has attributes for `name`, `state`, and `population` whereas a `Neighborhood` only has attributes for `name` and `population`. Attributes have a type. The `name` and `state` attribute are `.StringAttributeType` and the `population` is given a `Integer64AttributeType`. All the attributes are marked as required by setting `optional` to `false`. An attribute could also be marked as indexed...
+//: [Entities](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdMOM.html#//apple_ref/doc/uid/TP40002328-SW5) have properties, in the form of attributes and relationships. In our model, a `City` has attributes for `name`, `state`, and `population` whereas a `Neighborhood` only has attributes for `name` and `population`. Attributes have a type. The `name` and `state` attribute are `.stringAttributeType` and the `population` is given a `.integer64AttributeType`. All the attributes are marked as required by setting `isOptional` to `false`.
 
 let nameAttribute = NSAttributeDescription()
 nameAttribute.name = GROAttribute.Name
@@ -151,7 +151,7 @@ class NotificationListener: NSObject {
 }
 
 let delegate = NotificationListener()
-NotificationCenter.default().addObserver(delegate, selector: #selector(NotificationListener.handleDidSaveNotification(_:)), name: NSNotification.Name.NSManagedObjectContextDidSave, object: nil)
+NotificationCenter.default.addObserver(delegate, selector: #selector(NotificationListener.handleDidSaveNotification(_:)), name: NSNotification.Name.NSManagedObjectContextDidSave, object: nil)
 
 //: Save the context so it's populated with the entities.
 do {
@@ -164,7 +164,7 @@ catch {
 //: After the context saved, we can query it by creating a [Fetch Request](https://developer.apple.com/library/ios/documentation/DataManagement/Devpedia-CoreData/fetchRequest.html). We'll use a [predicate](https://developer.apple.com/library/mac/documentation/cocoa/reference/Foundation/Classes/NSPredicate_Class/Reference/NSPredicate.html) to return `Neighborhood` entities with a `population` greater than 15000. Only two such entities exist in the data model.
 
 var fetchRequest = NSFetchRequest<NSManagedObject>(entityName: GROEntity.Neighborhood)
-fetchRequest.predicate = Predicate(format: "population > %d", 15000)
+fetchRequest.predicate = NSPredicate(format: "population > %d", 15000)
 
 var results: [NSManagedObject] = []
 
@@ -204,7 +204,7 @@ secondObject?.value(forKey: GROAttribute.Name)
 //: Attributes and relationships on a managed object may be changed. When the context is saved the changes made to the managed objects are persisted. In the example below the `population` attribute of a `Neighborhood` entity is changed and the context to saved.
     
 fetchRequest = NSFetchRequest(entityName: GROEntity.Neighborhood)
-fetchRequest.predicate = Predicate(format: "name = %@", "Belltown")
+fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
 
 do {
     results = try managedObjectContext.fetch(fetchRequest)

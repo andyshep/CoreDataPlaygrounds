@@ -4,17 +4,17 @@ import Cocoa
 import CoreData
 import PlaygroundSupport
 
-enum CoreDataError: ErrorProtocol {
+enum CoreDataError: Error {
     case modelNotFound
     case modelNotCreated
 }
 
 func createManagedObjectContext() throws -> NSManagedObjectContext {
-    guard let modelURL = Bundle.main().urlForResource("Model", withExtension: "momd") else {
+    guard let url = Bundle.main.url(forResource: "Model", withExtension: "momd") else {
         throw CoreDataError.modelNotFound
     }
     
-    guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
+    guard let model = NSManagedObjectModel(contentsOf: url) else {
         throw CoreDataError.modelNotCreated
     }
     
@@ -54,7 +54,7 @@ class DataSource: NSObject {
         arrayController.managedObjectContext = self.context
         arrayController.entityName = "Fruit"
         arrayController.automaticallyPreparesContent = false
-        arrayController.sortDescriptors = [SortDescriptor(key: "name", ascending: true)]
+        arrayController.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         
         return arrayController
     }()

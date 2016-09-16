@@ -6,12 +6,12 @@ A set of playgrounds for exploring the Core Data framework in bite-sized increme
 |---|---|
 | Introduction | A no frills, bare-metal introduction to Core Data. |
 | UITableView | Tables views on iOS with NSFetchedResultsController |
-| NSTableView | Tables views on OS X using NSArrayController |
+| NSTableView | Tables views on macOS using NSArrayController |
 | Events | A remake of the basic Core Data sample from Apple |
 
 ## Requirements
 
-* [Xcode 8](https://developer.apple.com/xcode/downloads/) or greater
+* Xcode 8
 * Swift 3
 	
 ## License
