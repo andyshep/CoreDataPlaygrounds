@@ -99,8 +99,7 @@ let persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel
 
 do {
     try persistentStoreCoordinator.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil, options: nil)
-}
-catch {
+} catch {
     print("error creating psc: \(error)")
 }
 
@@ -156,8 +155,7 @@ NotificationCenter.default.addObserver(delegate, selector: #selector(Notificatio
 //: Save the context so it's populated with the entities.
 do {
     try managedObjectContext.save()
-}
-catch {
+} catch {
     print("error saving context: \(error)")
 }
 
@@ -170,11 +168,9 @@ var results: [NSManagedObject] = []
 
 do {
     results = try managedObjectContext.fetch(fetchRequest)
-}
-catch {
+} catch {
     print("error executing fetch request: \(error)")
 }
-
 
 assert(results.count >= 2, "wrong number of results")
 
@@ -193,8 +189,7 @@ secondContext.persistentStoreCoordinator = persistentStoreCoordinator
 do {
     firstObject = try managedObjectContext.existingObject(with: moid)
     secondObject = try secondContext.existingObject(with: moid)
-}
-catch {
+} catch {
     print("error finding objects: \(error)")
 }
     
@@ -208,8 +203,7 @@ fetchRequest.predicate = NSPredicate(format: "name = %@", "Belltown")
 
 do {
     results = try managedObjectContext.fetch(fetchRequest)
-}
-catch {
+} catch {
     print("error executing fetch: \(error)")
 }
 
@@ -222,31 +216,27 @@ do {
     let objectId = (managedObject?.objectID)!
     try managedObjectContext.save()
     managedObject = try managedObjectContext.existingObject(with: objectId)
-}
-catch {
+} catch {
     print("error finding object: \(error)")
 }
 
 managedObject?.value(forKey: GROAttribute.Name)
 
-if let managedObject = managedObject {
-    
+guard let managedObject = managedObject else { fatalError() }
+
 //: Objects can be deleted through the context. Once deleted, they can no longer be retrieved by object id.
-    do {
-        managedObjectContext.delete(managedObject)
-        try managedObjectContext.save()
-    }
-    catch {
-        print("error deleting object: \(error)")
-    }
-    
+do {
+    managedObjectContext.delete(managedObject)
+    try managedObjectContext.save()
+} catch {
+    print("error deleting object: \(error)")
+}
+
 //: This should fail, object with id not found. The object has been deleted.
-    do {
-        let managedObject = try managedObjectContext.existingObject(with: managedObject.objectID)
-    }
-    catch {
-        print("error executing fetch request: \(error)")
-    }
+do {
+    let _ = try managedObjectContext.existingObject(with: managedObject.objectID)
+} catch {
+    print("error finding object: \(error)")
 }
 
 //: That wraps up a basic introduction to Core Data using a Swift and a Playground. The Core Data framework is big and there's [much more explore](http://www.objc.io/issue-4/). For more information, consider reading through the [Core Data Programming Guide](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html) or looking at the source for a Core Data [template project in Xcode](http://code.tutsplus.com/tutorials/core-data-from-scratch-core-data-stack--cms-20926).
