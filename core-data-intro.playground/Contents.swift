@@ -45,6 +45,7 @@ cityEntity.name = GROEntity.City
 
 let neighborhoodEntity = NSEntityDescription()
 neighborhoodEntity.name = GROEntity.Neighborhood
+neighborhoodEntity.indexes = []
 
 //: [Entities](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdMOM.html#//apple_ref/doc/uid/TP40002328-SW5) have properties, in the form of attributes and relationships. In our model, a `City` has attributes for `name`, `state`, and `population` whereas a `Neighborhood` only has attributes for `name` and `population`. Attributes have a type. The `name` and `state` attribute are `.stringAttributeType` and the `population` is given a `.integer64AttributeType`. All the attributes are marked as required by setting `isOptional` to `false`.
 
@@ -52,19 +53,16 @@ let nameAttribute = NSAttributeDescription()
 nameAttribute.name = GROAttribute.Name
 nameAttribute.attributeType = NSAttributeType.stringAttributeType
 nameAttribute.isOptional = false
-nameAttribute.isIndexed = false
 
 let stateAttribute = NSAttributeDescription()
 stateAttribute.name = GROAttribute.State
 stateAttribute.attributeType = NSAttributeType.stringAttributeType
 stateAttribute.isOptional = false
-stateAttribute.isIndexed = false
 
 let populationAttribute = NSAttributeDescription()
 populationAttribute.name = GROAttribute.Population
 populationAttribute.attributeType = NSAttributeType.integer64AttributeType
 populationAttribute.isOptional = false
-populationAttribute.isIndexed = false
 
 //: Next declare the one-to-many relationship between `City` and `Neighborhoods`. The relationship needs to be declared on both ends, or between both entities. On one end of the relationship, the `neighborhoodEntity` is setup with a `maxCount` of zero. On the other end, the `cityEntity` is given a `maxCount` of one. This defines both ends of the relationship. To connect the relationship fully, set the `inverseRelationship` property on each relationship to point to the other.
 
@@ -134,7 +132,7 @@ let neighborhoods = [[GROAttribute.Name:"Loyal Heights", GROAttribute.Population
     [GROAttribute.Name:"Belltown", GROAttribute.Population:7399]]
 
 for obj in neighborhoods {
-    var neighborhood = NSEntityDescription.insertNewObject(forEntityName: GROEntity.Neighborhood, into: managedObjectContext)
+    let neighborhood = NSEntityDescription.insertNewObject(forEntityName: GROEntity.Neighborhood, into: managedObjectContext)
     neighborhood.setValue(obj[GROAttribute.Name], forKey: GROAttribute.Name)
     neighborhood.setValue(obj[GROAttribute.Population], forKey: GROAttribute.Population)
     
@@ -144,7 +142,7 @@ for obj in neighborhoods {
 //: Until this point, the context has remained "empty", per se. When the context is saved it will send out notifications about the object state changes. As an optional step, we can create a `NotificationListener` and subscribe to the context notifications. In an iOS app, this object would likely correspond to a [Fetched Results Controller](https://developer.apple.com/library/ios/documentation/CoreData/Reference/NSFetchedResultsController_Class/Reference/Reference.html) or another object on your data model. In a Playground setup, we'll use [`printf()` debugging](http://stackoverflow.com/a/189570) to peak behind the scenes and examine the notifications sent by Core Data.`
 
 class NotificationListener: NSObject {
-    func handleDidSaveNotification(_ notification:Notification) {
+    @objc func handleDidSaveNotification(_ notification:Notification) {
         print("did save notification received: \(notification)")
     }
 }
@@ -232,11 +230,11 @@ do {
     print("error deleting object: \(error)")
 }
 
-//: This should fail, object with id not found. The object has been deleted.
+//: This should fail, with object id not found. The object has been deleted.
 do {
     let _ = try managedObjectContext.existingObject(with: managedObject.objectID)
 } catch {
-    print("error finding object: \(error)")
+    print("expect to receive error finding object: \(error)")
 }
 
 //: That wraps up a basic introduction to Core Data using a Swift and a Playground. The Core Data framework is big and there's [much more explore](http://www.objc.io/issue-4/). For more information, consider reading through the [Core Data Programming Guide](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CoreData/Articles/cdBasics.html) or looking at the source for a Core Data [template project in Xcode](http://code.tutsplus.com/tutorials/core-data-from-scratch-core-data-stack--cms-20926).

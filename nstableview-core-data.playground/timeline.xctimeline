@@ -2,5 +2,10 @@
 <Timeline
    version = "3.0">
    <TimelineItems>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/andyshep/projects/CoreDataPlaygrounds/nstableview-core-data.playground#CharacterRangeLen=6&amp;CharacterRangeLoc=2266&amp;EndingColumnNumber=7&amp;EndingLineNumber=75&amp;StartingColumnNumber=1&amp;StartingLineNumber=75&amp;Timestamp=536755914.719267"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
    </TimelineItems>
 </Timeline>

@@ -60,7 +60,8 @@ class DataSource: NSObject {
     }()
 }
 
-let column = NSTableColumn(identifier: "Name")
+let identifier = NSUserInterfaceItemIdentifier.init("Name")
+let column = NSTableColumn(identifier: identifier)
 column.width = 300
 
 let tableView = NSTableView(frame: CGRect(x: 0, y: 0, width: 230, height: 300))
@@ -72,7 +73,7 @@ try insertObjectsIntoContext(context)
 
 let dataSource = DataSource(context: context)
 
-column.bind(NSValueBinding, to: dataSource.arrayController, withKeyPath: "arrangedObjects.name", options: nil)
+column.bind(NSBindingName.value, to: dataSource.arrayController, withKeyPath: "arrangedObjects.name", options: nil)
 try dataSource.arrayController.fetch(with: nil, merge: false)
 
 PlaygroundPage.current.liveView = tableView

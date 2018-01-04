@@ -36,7 +36,7 @@ class ViewController: UIViewController {
         return tableView
     }()
     
-    func handleAddButton(_ sender: AnyObject) {
+    @objc func handleAddButton(_ sender: AnyObject) {
         let context = self.dataSource.context
         let entity = NSEntityDescription.insertNewObject(forEntityName: "Event", into: context)
         entity.setValue(Date(), forKey: "timestamp")
