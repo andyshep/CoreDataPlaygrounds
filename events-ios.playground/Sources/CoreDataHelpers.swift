@@ -6,7 +6,7 @@ public enum CoreDataError: Error {
 }
 
 public func createManagedObjectContext() throws -> NSManagedObjectContext {
-    guard let modelURL = Bundle.main.url(forResource: "Model", withExtension: "momd") else {
+    guard let modelURL = Bundle.main.url(forResource: "Model", withExtension: "mom") else {
         throw CoreDataError.modelNotFound
     }
     

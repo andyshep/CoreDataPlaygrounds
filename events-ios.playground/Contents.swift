@@ -27,7 +27,7 @@ class ViewController: UIViewController {
         self.dataSource.tableView = self.tableView
         self.view.addSubview(self.tableView)
         
-        let item = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.add, target: self, action: #selector(handleAddButton))
+        let item = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.add, target: self, action: #selector(handleAddButton))
         self.navigationItem.rightBarButtonItem = item
     }
     
